@@ -1,7 +1,5 @@
 package agh.ics.oop;
 
-import java.util.Map;
-
 import static java.lang.System.out;
 
 class Vector2d {
@@ -14,17 +12,15 @@ class Vector2d {
     }
 
     public String toString() {
-        return '(' + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")";
+        return '(' + Integer.toString(this.x) + "," + this.y + ")";
     }
 
     public boolean precedes(Vector2d other) {
-        if (this.x <= other.x && this.y <= other.y) return true;
-        else return false;
+        return this.x <= other.x && this.y <= other.y;
     }
 
     public boolean follows(Vector2d other) {
-        if (this.x >= other.x && this.y >= other.y) return true;
-        else return false;
+        return this.x >= other.x && this.y >= other.y;
     }
 
     public Vector2d add(Vector2d other) {
@@ -50,10 +46,9 @@ class Vector2d {
     public boolean equals(Object other) {
         if (this == other)
             return true;
-        if (!(other instanceof Vector2d))
+        if (!(other instanceof Vector2d that))
             return false;
-        Vector2d that = (Vector2d) other;
-        return Integer.compare(this.x, that.x) == 0 && Integer.compare(this.y, that.y) == 0;
+        return this.x == that.x && this.y == that.y;
     }
 
     public int hashCode() {
@@ -61,71 +56,102 @@ class Vector2d {
         return this.x + (tmp * tmp);
     }
 }
-enum MoveDirections{
-    FORWARD, BACKWARD, RIGHT, LEFT
+
+enum MoveDirection {
+    FORWARD, BACKWARD, RIGHT, LEFT, DEFAULT
 }
+
 enum MapDirections {
     NORTH, SOUTH, WEST, EAST;
 
     public String toString() {
-        switch (this) {
-            case EAST:
-                return "Wschód";
-            case WEST:
-                return "Zachód";
-            case NORTH:
-                return "Północ";
-            case SOUTH:
-                return "Południe";
-        }
-        return null;
+        return switch (this) {
+            case EAST -> "East";
+            case WEST -> "West";
+            case NORTH -> "North";
+            case SOUTH -> "South";
+        };
     }
 
     public MapDirections next() {
-        switch (this) {
-            case EAST:
-                return SOUTH;
-            case WEST:
-                return NORTH;
-            case NORTH:
-                return EAST;
-            case SOUTH:
-                return WEST;
-        }
-        return null;
+        return switch (this) {
+            case EAST -> SOUTH;
+            case WEST -> NORTH;
+            case NORTH -> EAST;
+            case SOUTH -> WEST;
+        };
     }
-    public MapDirections previous(){
-        switch (this){
-            case EAST:
-                return NORTH;
-            case WEST:
-                return SOUTH;
-            case NORTH:
-                return WEST;
-            case SOUTH:
-                return EAST;
 
-        }
-        return null;
+    public MapDirections previous() {
+        return switch (this) {
+            case EAST -> NORTH;
+            case WEST -> SOUTH;
+            case NORTH -> WEST;
+            case SOUTH -> EAST;
+        };
     }
-    public Vector2d toUnitVector(){
-        switch (this){
-            case EAST:
-                return new Vector2d(1,0);
-            case WEST:
-                return new Vector2d(-1,0);
-            case NORTH:
-                return new Vector2d(0,1);
-            case SOUTH:
-                return new Vector2d(0,-1);
-        }
-        return null;
+
+    public Vector2d toUnitVector() {
+        return switch (this) {
+            case EAST -> new Vector2d(1, 0);
+            case WEST -> new Vector2d(-1, 0);
+            case NORTH -> new Vector2d(0, 1);
+            case SOUTH -> new Vector2d(0, -1);
+        };
     }
 }
 
+class Animal {
+    private MapDirections orientation = MapDirections.NORTH;
+    private Vector2d position = new Vector2d(2, 2);
+    private final Vector2d mapEdge = new Vector2d(4,4);
+
+    public String toString() {
+        return this.orientation.toString() + ' ' + this.position.toString();
+    }
+
+    public boolean isAt(Vector2d positionToCheck) {
+        return this.position.equals(positionToCheck);
+    }
+
+    public void move(MoveDirection direction) {
+        Vector2d newPosition = this.orientation.toUnitVector();
+        out.println(newPosition.toString());
+        switch (direction) {
+            case LEFT:
+                out.println("lewo");
+                this.orientation = this.orientation.previous();
+                return;
+            case RIGHT:
+                out.println("prwao");
+                this.orientation = this.orientation.next();
+                return;
+            case FORWARD:
+                newPosition = this.position.add(newPosition);
+                break;
+            case BACKWARD:
+                newPosition = this.position.subtract(newPosition);
+                break;
+            case DEFAULT:
+                return;
+        }
+        if (newPosition.precedes(this.mapEdge)) this.position = newPosition;
+
+    }
+
+}
+
+
+
 public class World {
     public static void main(String[] args) {
+        Animal turtle =  new Animal();
 
+        turtle.move(MoveDirection.RIGHT);
+        turtle.move(MoveDirection.FORWARD);
+        turtle.move(MoveDirection.FORWARD);
+        turtle.move(MoveDirection.FORWARD);
+        out.println(turtle);
         out.println("Start");
         Directions[] Path = to_enum(args);
         run(Path);
@@ -135,18 +161,10 @@ public class World {
     public static void run(Directions[] dir) {
         for (Directions direction : dir) {
             switch (direction) {
-                case f:
-                    out.println("Zwierzak idzie do przodu");
-                    break;
-                case b:
-                    out.println("Zwierzak idzie do tyłu");
-                    break;
-                case r:
-                    out.println("Zwierzak skręca w prawo");
-                    break;
-                case l:
-                    out.println("Zwierzak skręca w lewo");
-                    break;
+                case f -> out.println("Zwierzak idzie do przodu");
+                case b -> out.println("Zwierzak idzie do tyłu");
+                case r -> out.println("Zwierzak skręca w prawo");
+                case l -> out.println("Zwierzak skręca w lewo");
             }
         }
     }
@@ -163,7 +181,6 @@ public class World {
             };
             enum_dir[i] = x;
         }
-        out.println(enum_dir);
         return enum_dir;
     }
 }
