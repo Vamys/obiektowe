@@ -104,10 +104,34 @@ enum MapDirections {
 class Animal {
     private MapDirections orientation = MapDirections.NORTH;
     private Vector2d position = new Vector2d(2, 2);
-    private final Vector2d mapEdge = new Vector2d(4,4);
+
+    private final IWorldMap animalMap;
+
+    public Animal() {
+        this.animalMap = new RectangularMap(4, 4);
+    }
+
+    public Animal(IWorldMap map) {
+        this.animalMap = map;
+    }
+
+    public Animal(IWorldMap map, Vector2d initialPosition) {
+        this.position = initialPosition;
+        this.animalMap = map;
+    }
+
+    public Vector2d animalPosition() {
+        return this.position;
+    }
 
     public String toString() {
-        return this.orientation.toString() + ' ' + this.position.toString();
+        String a = switch (this.orientation) {
+            case WEST -> "W";
+            case EAST -> "E";
+            case NORTH -> "N";
+            case SOUTH -> "S";
+        };
+        return a + ' ' + this.position.toString();
     }
 
     public boolean isAt(Vector2d positionToCheck) {
@@ -116,14 +140,11 @@ class Animal {
 
     public void move(MoveDirection direction) {
         Vector2d newPosition = this.orientation.toUnitVector();
-        out.println(newPosition.toString());
         switch (direction) {
             case LEFT:
-                out.println("lewo");
                 this.orientation = this.orientation.previous();
                 return;
             case RIGHT:
-                out.println("prwao");
                 this.orientation = this.orientation.next();
                 return;
             case FORWARD:
@@ -135,27 +156,21 @@ class Animal {
             case DEFAULT:
                 return;
         }
-        if (newPosition.precedes(this.mapEdge)) this.position = newPosition;
-
+        if (this.animalMap.canMoveTo(newPosition)) {
+            this.position = newPosition;
+        }
     }
 
 }
 
 
-
 public class World {
     public static void main(String[] args) {
-        Animal turtle =  new Animal();
-
-        turtle.move(MoveDirection.RIGHT);
-        turtle.move(MoveDirection.FORWARD);
-        turtle.move(MoveDirection.FORWARD);
-        turtle.move(MoveDirection.FORWARD);
-        out.println(turtle);
-        out.println("Start");
-        Directions[] Path = to_enum(args);
-        run(Path);
-        out.println("Stop");
+        MoveDirection[] directions = new OptionsParser().parse(args);
+        IWorldMap map = new RectangularMap(10, 5);
+        Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
+        IEngine engine = new SimulationEngine(directions, map, positions);
+        engine.run();
     }
 
     public static void run(Directions[] dir) {

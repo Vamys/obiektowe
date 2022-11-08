@@ -1,6 +1,6 @@
 package agh.ics.oop;
 
-public class OptionsParaser {
+public class OptionsParser {
         public static MoveDirection[] parse(String[] tab) {
             MoveDirection[] directionsTab = new MoveDirection[tab.length];
             MoveDirection x;
