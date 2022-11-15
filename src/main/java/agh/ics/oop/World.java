@@ -101,17 +101,18 @@ enum MapDirections {
     }
 }
 
-class Animal {
+class Animal implements IMapElement {
     private MapDirections orientation = MapDirections.NORTH;
-    private Vector2d position = new Vector2d(2, 2);
-
+    private Vector2d position;
     private final IWorldMap animalMap;
 
     public Animal() {
+        this.position = new Vector2d(2, 2);
         this.animalMap = new RectangularMap(4, 4);
     }
 
     public Animal(IWorldMap map) {
+        this.position = new Vector2d(2, 2);
         this.animalMap = map;
     }
 
@@ -120,7 +121,7 @@ class Animal {
         this.animalMap = map;
     }
 
-    public Vector2d animalPosition() {
+    public Vector2d getPosition() {
         return this.position;
     }
 
