@@ -5,10 +5,10 @@ import java.util.List;
 
 public class SimulationEngine implements IEngine {
     private final MoveDirection[] moves;
-    private final IWorldMap map;
+    private final AbstractWorldMap map;
     private final List<Animal> animals = new ArrayList<>();
 
-    public SimulationEngine(MoveDirection[] moves, IWorldMap map, Vector2d[] startingPositions) {
+    public SimulationEngine(MoveDirection[] moves, AbstractWorldMap map, Vector2d[] startingPositions) {
         this.moves = moves;
         this.map = map;
         for (Vector2d position : startingPositions) {

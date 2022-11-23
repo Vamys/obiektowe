@@ -1,33 +1,61 @@
 package agh.ics.oop;
 
-import java.util.Random;
+
 
 public class GrassField extends AbstractWorldMap {
+    private final double Max;
 
     public GrassField(int numOfGrassFields) {
         int Min = 0;
-        double Max = Math.sqrt(numOfGrassFields * 10);
+        Vector2d v;
+        int x;
+        int y;
+        this.Max = Math.sqrt(numOfGrassFields * 10);
         for (int i = 0; i < numOfGrassFields; i++) {
-            int x = Min + (int) (Math.random() * ((Max - Min) + 1));
-            int y = Min + (int) (Math.random() * ((Max - Min) + 1));
-            this.mapElements.add(new Grass(new Vector2d(x, y)));
+
+            do{
+                x = Min + (int) (Math.random() * ((this.Max - Min) + 1));
+                y = Min + (int) (Math.random() * ((this.Max - Min) + 1));
+                v = new Vector2d(x,y);
+            } while (objectAt(v) != null);
+            this.mapElements.put(v,new Grass(v));
         }
     }
 
+
     public String toString() {
-        int x1 = Integer.MIN_VALUE;
-        int y1 = Integer.MIN_VALUE;
-        int x2 = Integer.MAX_VALUE;
-        int y2 = Integer.MAX_VALUE;
-        for (IMapElement mapElement : mapElements) {
-            Vector2d v = mapElement.getPosition();
-            x1 = Math.max(x1,v.x);
-            y1 = Math.max(y1,v.y);
-            x2 = Math.min(x2,v.x);
-            y2 = Math.min(y2,v.y);
+        for (Vector2d key : mapElements.keySet()) {
+            if (lowerLeft == null && upperRight == null) {
+                this.lowerLeft = key;
+                this.upperRight = key;
+            } else {
+                this.upperRight = this.upperRight.upperRight(key);
+                this.lowerLeft = this.lowerLeft.lowerLeft(key);
+            }
         }
-        this.lowerLeft = new Vector2d(x2, y2);
-        this.upperRight = new Vector2d(x1, y1);
         return super.toString();
+    }
+    private void replaceGrass(Vector2d position){
+        int Min = 0;
+        int x;
+        int y;
+        Vector2d v;
+        do{
+            x = Min + (int) (Math.random() * ((this.Max - Min) + 1));
+            y = Min + (int) (Math.random() * ((this.Max - Min) + 1));
+            v = new Vector2d(x,y);
+        } while (objectAt(v) != null);
+        positionChanged(position,v);
+    }
+    public void addGrass(Vector2d position){
+        Grass g = new Grass(position);
+        this.mapElements.put(position,g);
+    }
+
+    public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+        if (objectAt(newPosition) instanceof Grass){
+            replaceGrass(newPosition);
+        }
+        super.positionChanged(oldPosition,newPosition);
     }
 }

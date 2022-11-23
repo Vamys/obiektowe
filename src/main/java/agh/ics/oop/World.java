@@ -1,5 +1,8 @@
 package agh.ics.oop;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 import static java.lang.System.out;
 
 class Vector2d {
@@ -52,8 +55,7 @@ class Vector2d {
     }
 
     public int hashCode() {
-        int tmp = (this.y + ((this.x + 1) / 2));
-        return this.x + (tmp * tmp);
+        return Objects.hash(this.x,this.y);
     }
 }
 
@@ -104,21 +106,25 @@ enum MapDirections {
 class Animal implements IMapElement {
     private MapDirections orientation = MapDirections.NORTH;
     private Vector2d position;
-    private final IWorldMap animalMap;
+    private final AbstractWorldMap animalMap;
+    private final ArrayList<IPositionChangeObserver> observers = new ArrayList<IPositionChangeObserver>();
 
     public Animal() {
         this.position = new Vector2d(2, 2);
         this.animalMap = new RectangularMap(4, 4);
     }
 
-    public Animal(IWorldMap map) {
+    public Animal(AbstractWorldMap map) {
         this.position = new Vector2d(2, 2);
         this.animalMap = map;
+        addObserver(map);
+
     }
 
-    public Animal(IWorldMap map, Vector2d initialPosition) {
+    public Animal(AbstractWorldMap map, Vector2d initialPosition) {
         this.position = initialPosition;
         this.animalMap = map;
+        addObserver(map);
     }
 
     public Vector2d getPosition() {
@@ -158,17 +164,28 @@ class Animal implements IMapElement {
                 return;
         }
         if (this.animalMap.canMoveTo(newPosition)) {
+            positionChanged(this.position,newPosition);
             this.position = newPosition;
         }
     }
-
+    public void addObserver(IPositionChangeObserver observer){
+        this.observers.add(observer);
+    }
+    public void removeObserver(IPositionChangeObserver observer){
+        this.observers.remove(observer);
+    }
+    public void positionChanged(Vector2d oldPosition,Vector2d newPosition){
+        for(IPositionChangeObserver observer : observers){
+            observer.positionChanged(oldPosition,newPosition);
+        }
+    }
 }
 
 
 public class World {
     public static void main(String[] args) {
         MoveDirection[] directions = new OptionsParser().parse(args);
-        IWorldMap map = new RectangularMap(10, 5);
+        AbstractWorldMap map = new RectangularMap(10, 5);
         Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
         IEngine engine = new SimulationEngine(directions, map, positions);
         engine.run();
